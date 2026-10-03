@@ -1,0 +1,24 @@
+name: Close ENG issue on merge into dev
+on:
+    pull_request:
+        types: [closed]
+        branches: [dev]
+permissions:
+    issues: write
+jobs:
+    close:
+        if: github.event.pull_request.merged == true
+        runs-on: ubuntu-latest
+        steps:
+            - env:
+                  GH_TOKEN: ${{ github.token }}
+                  HEAD: ${{ github.head_ref }}
+                  PR_URL: ${{ github.event.pull_request.html_url }}
+                  REPO: ${{ github.repository }}
+              run: |
+                  n=""
+                  if [[ "$HEAD" =~ ENG-([0-9]+) ]] || [[ "$HEAD" =~ ^claude/issue-([0-9]+) ]]; then
+                    n="${BASH_REMATCH[1]}"
+                  fi
+                  if [ -z "$n" ]; then echo "No ENG-<n> in branch name; nothing to close."; exit 0; fi
+                  gh issue close "$n" --repo "$REPO" --comment "ENG-$n done in $PR_URL (merged into dev)."

@@ -1,0 +1,32 @@
+name: PR conventions
+on:
+    pull_request:
+        types: [opened, edited, synchronize, reopened]
+jobs:
+    pr-conventions:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check base, branch and title
+              env:
+                  BASE: ${{ github.base_ref }}
+                  HEAD: ${{ github.head_ref }}
+                  TITLE: ${{ github.event.pull_request.title }}
+              run: |
+                  fail() { echo "::error::$1"; exit 1; }
+
+                  if [ "$BASE" = "main" ]; then
+                    [[ "$HEAD" == "dev" || "$HEAD" == hotfix/* ]] || fail "PRs into main must come from dev or hotfix/*"
+                    exit 0
+                  fi
+                  [ "$BASE" = "dev" ] || fail "PRs must target dev"
+
+                  # Exceptions into dev: back-merge from main, release notes, the Claude app's own setup PR
+                  [[ "$HEAD" == "main" || "$HEAD" == release/* || "$HEAD" == add-claude-github-actions-* ]] && exit 0
+
+                  if [[ "$HEAD" =~ ENG-([0-9]+) ]] || [[ "$HEAD" =~ ^claude/issue-([0-9]+) ]]; then
+                    n="${BASH_REMATCH[1]}"
+                  else
+                    fail "Branch must contain ENG-<n>, e.g. feat/ENG-12-sanitize"
+                  fi
+                  [[ "$TITLE" =~ \(ENG-${n}\)$ ]] || fail "PR title must end with (ENG-${n})"
+                  if [[ "$TITLE" =~ \#[0-9]+ ]]; then fail "Write issues as ENG-<n>, not #<n>"; fi

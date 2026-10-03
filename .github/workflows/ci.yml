@@ -1,0 +1,19 @@
+name: CI
+on:
+    pull_request:
+        branches: [dev, main]
+    push:
+        branches: [dev, main]
+jobs:
+    check:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-go@v5
+              with: { go-version-file: go.mod }
+            - uses: golangci/golangci-lint-action@v7 # v7+ supports golangci-lint v2
+              with: { version: latest } # pin a version for reproducible builds
+            - run: go tool sqlc diff
+            - run: go mod tidy -diff
+            - run: go test -race -count=1 ./...
+            - run: go tool govulncheck ./...
