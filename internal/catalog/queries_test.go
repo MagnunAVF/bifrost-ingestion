@@ -129,14 +129,15 @@ func TestMapErr(t *testing.T) {
 	other := errors.New("disk on fire")
 
 	tests := []struct {
-		name string
-		in   error
-		want []error // every error that must be in the chain; nil means MapErr returns nil
+		name    string
+		in      error
+		want    []error // every error that must be in the chain; nil means MapErr returns nil
+		notWant []error
 	}{
 		{name: "nil", in: nil},
 		{name: "no rows", in: sql.ErrNoRows, want: []error{errs.ErrNotFound, sql.ErrNoRows}},
 		{name: "wrapped no rows", in: errors.Join(other, sql.ErrNoRows), want: []error{errs.ErrNotFound, other}},
-		{name: "other error passes through", in: other, want: []error{other}},
+		{name: "other error passes through", in: other, want: []error{other}, notWant: []error{errs.ErrNotFound, errs.ErrConflict}},
 	}
 
 	for _, tt := range tests {
@@ -150,9 +151,8 @@ func TestMapErr(t *testing.T) {
 			for _, w := range tt.want {
 				assert.ErrorIs(t, got, w)
 			}
-			if tt.in == other {
-				assert.NotErrorIs(t, got, errs.ErrNotFound)
-				assert.NotErrorIs(t, got, errs.ErrConflict)
+			for _, w := range tt.notWant {
+				assert.NotErrorIs(t, got, w)
 			}
 		})
 	}
