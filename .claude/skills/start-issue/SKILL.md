@@ -17,6 +17,10 @@ resolve it first with `scripts/eng-issue.sh $ARGUMENTS` (prints <number>).
    plus one row per acceptance criterion and error case), files to create or change, and
    decisions that need my input. If the issue says "write the plan first", write ONLY
      docs/plans/ENG-<n>-<slug>.md instead. STOP and wait for my approval.
-5. After approval: tests first (show them failing for the right reason), then the implementation,
-   then `make check` until green.
+5. After approval: save the approved proposal as docs/plans/ENG-<n>-<slug>.md (always, even if
+   the issue didn't ask for a plan; same layout as the existing plans: status line with the
+   approval date, goal, public API, tests, tasks, approved decisions) and keep it in sync if the
+   API changes during implementation; commit it with the issue's docs task. Then tests first
+   (show them failing for the right reason), then the implementation, then `make check` until
+   green.
 6. Summarize what changed and what I should double-check. Don't ship; I'll run /ship.
