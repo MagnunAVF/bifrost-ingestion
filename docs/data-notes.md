@@ -172,10 +172,12 @@ The pair with a matching name but differing attributes is index 87 (Category `Ph
   - 10 Sports entries from indexes 237–246 repeated at 257–266 with a doubled space and a new Id
     (e.g. OfficeSupply "Basketball Spalding Official" with `1111aaaa-…` and with `aaaa1111-…`)
 
-## Proposed identity string
+## Identity string (contract, implemented in ENG-3)
 
 The string we embed. It must be built **the same way for catalog rows and incoming entries**,
-otherwise the similarity scores are not comparable.
+otherwise the similarity scores are not comparable: both go through `ingest.Identity`. Changing
+it changes every embedding and threshold; `internal/ingest/testdata/ProductEntry.golden.jsonl`
+pins it for the whole fixture.
 
 ```
 <Name> | brand: <Brand> | category: <Category>
@@ -187,17 +189,35 @@ otherwise the similarity scores are not comparable.
   brand (`"Notebook Dell Inspiron"`).
 - SellerName and Id are excluded: they say nothing about what the product *is*.
 
-Sanitization to apply to each field before building the string (in internal/ingest):
+Sanitization applied to each field (`ingest.Sanitize`, in this order):
 
-1. Unicode NFC. Remove control, format and zero-width characters (Cc and Cf).
-2. Turn every whitespace run into a single space, then trim.
-3. Canonicalize inch marks: `''`, `″` and `”` after a digit all become `"`.
-4. Keep the case and the accents in the embedded string. The model handles them, and
-   `Câmera`/`Camera` should land close anyway.
-5. Cap the length, e.g. 256 runes per field, since the observed maximum is 36.
-6. Malicious content is **data**: it is never interpolated into SQL (sqlc parameters only),
+1. Invalid UTF-8 becomes U+FFFD.
+2. Every whitespace character becomes a space; other control and format characters (Cc, Cf,
+   including zero-width ones) are removed.
+3. Unicode NFC.
+4. Whitespace runs collapse to a single space, then trim.
+5. Cap at 256 runes (`MaxFieldRunes`; the observed maximum is 36), on a rune boundary.
+6. Nothing else is rewritten: case, accents, quotes and apostrophes stay (`O'Neill`, `Levi's`,
+   `12.9''` and `12.9"` are kept as sent; there is no inch-mark canonicalization). The model
+   handles them, and `Câmera`/`Camera` should land close anyway.
+7. Malicious content is **data**: it is never interpolated into SQL (sqlc parameters only),
    and it is embedded and stored like any other string unless the record is rejected for
    another reason.
+
+Rejects (`Record.Reason`, first problem in field order wins; decoding continues):
+
+- Id, SellerName, Name: `missing`, `null`, `not a string`, or `blank` after sanitizing.
+- Id: `not a UUID` unless it has the 8-4-4-4-12 hex shape (any case; stored lowercased). Not
+  full RFC 4122. Rejects fixture entries 92, 180 and 268.
+- Brand, Category: `not a string`. Missing, null or blank is fine and drops the segment.
+- `duplicate key "<k>"` and `not an object` for the element as a whole. Unknown keys are ignored.
+- A payload that is not one JSON array, or is larger than 64 MiB, stops the run
+  (`errs.ErrInvalidInput`).
+
+Suspicious flags (`Record.Flags`, reported, never removed; set on rejects too): invalid UTF-8
+replaced, control or format characters removed, truncated, SQL-like content (`;`, `--`, `/*`,
+`*/`, or a quote followed by an SQL keyword or `OR '…`/`OR 1`), markup-like content
+(`<script`, `javascript:`). In the fixture only entry 180's Brand is flagged.
 
 Examples:
 
