@@ -8,7 +8,11 @@ tool (
 	golang.org/x/vuln/cmd/govulncheck
 )
 
-require github.com/stretchr/testify v1.12.1
+require (
+	github.com/pressly/goose/v3 v3.28.0
+	github.com/stretchr/testify v1.12.1
+	modernc.org/sqlite v1.57.0
+)
 
 require (
 	cel.dev/expr v0.25.2 // indirect
@@ -64,7 +68,6 @@ require (
 	github.com/pingcap/log v1.1.0 // indirect
 	github.com/pingcap/tidb/pkg/parser v0.0.0-20260418072757-ce92298d1124 // indirect
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
-	github.com/pressly/goose/v3 v3.28.0 // indirect
 	github.com/prometheus/procfs v0.22.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/riza-io/grpc-go v0.2.0 // indirect
@@ -109,5 +112,4 @@ require (
 	modernc.org/libc v1.75.6 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.12.1 // indirect
-	modernc.org/sqlite v1.57.0 // indirect
 )
