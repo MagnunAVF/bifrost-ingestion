@@ -9,4 +9,6 @@ var (
 	ErrNotFound = errors.New("not found")
 	// ErrConflict means a write would violate a uniqueness or consistency rule.
 	ErrConflict = errors.New("conflict")
+	// ErrInvalidInput means an input could not be processed at all (e.g. a broken JSON payload).
+	ErrInvalidInput = errors.New("invalid input")
 )
