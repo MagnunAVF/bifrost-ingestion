@@ -11,4 +11,7 @@ var (
 	ErrConflict = errors.New("conflict")
 	// ErrInvalidInput means an input could not be processed at all (e.g. a broken JSON payload).
 	ErrInvalidInput = errors.New("invalid input")
+	// ErrUpstream means an external service (e.g. Ollama) failed or answered with something
+	// unusable: a non-200 status, a malformed or oversized body, or inconsistent results.
+	ErrUpstream = errors.New("upstream failed")
 )
