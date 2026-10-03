@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(make check)",
+      "Bash(make test)",
+      "Bash(make lint)",
+      "Bash(make generate)",
+      "Bash(make run)",
+      "Bash(make migrate)",
+      "Bash(make reset-db)",
+      "Bash(make schema)",
+      "Bash(make bench)",
+      "Bash(make fuzz)",
+      "Bash(make e2e)",
+      "Bash(go test:*)",
+      "Bash(go build:*)",
+      "Bash(go vet:*)",
+      "Bash(go run ./cmd/bifrost:*)",
+      "Bash(go mod tidy)",
+      "Bash(go tool sqlc:*)",
+      "Bash(golangci-lint run:*)",
+      "Bash(golangci-lint fmt:*)",
+      "Bash(sqlite3 -readonly:*)",
+      "Bash(jq:*)",
+      "Bash(ollama list)",
+      "Bash(git status)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git fetch:*)",
+      "Bash(git checkout -b:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(gh issue view:*)",
+      "Bash(gh issue list:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(gh pr list:*)"
+    ],
+    "ask": [
+      "Bash(go get:*)",
+      "Bash(go tool goose:*)",
+      "Bash(ollama pull:*)",
+      "Bash(git push:*)",
+      "Bash(git tag:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh issue create:*)",
+      "Bash(gh issue edit:*)",
+      "Bash(gh issue close:*)",
+      "Bash(gh api:*)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Edit(./testdata/catalog.db)",
+      "Write(./testdata/catalog.db)",
+      "Edit(./testdata/ProductEntry.json)",
+      "Write(./testdata/ProductEntry.json)",
+      "Bash(sqlite3 testdata/catalog.db:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push origin main:*)",
+      "Bash(git push origin dev:*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/after-edit.sh"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/stop-check.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
