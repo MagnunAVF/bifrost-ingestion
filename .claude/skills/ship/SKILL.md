@@ -14,7 +14,8 @@ resolve it first with `scripts/eng-issue.sh $ARGUMENTS` (prints <number>).
 3. Review `git status` and `git diff --stat origin/dev...HEAD`. testdata/catalog.db and
    testdata/ProductEntry.json must be unchanged. List any file unrelated to the issue and ask
    before including it.
-4. Commit with conventional messages ending in "(ENG-<n>)" (the PR is squashed into dev).
+4. Commit any remaining task with a conventional message ending in "(ENG-<n>, task k/m)", one
+   commit per task (CLAUDE.md "Commits"). The PR title ends in "(ENG-<n>)".
 5. `git push -u origin HEAD`.
 6. `gh pr create --base dev --milestone "<current milestone title>" --title "<type>(<scope>): <summary> (ENG-<n>)"`
    with a body following .github/pull_request_template.md, starting with "Issue: ENG-<n>".

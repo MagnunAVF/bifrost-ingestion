@@ -52,8 +52,8 @@ float32 vectors, no full-file reads of the payload.
   an issue and never "ENG-#<n>". Pull requests are referenced as "PR #<n>".
 - Branches: feat/ENG-<n>-<slug>, fix/ENG-<n>-<slug>, chore/ENG-<n>-<slug>, docs/ENG-<n>-<slug>,
   always created from origin/dev.
-- Commits and PR titles: conventional commits ending in "(ENG-<n>)",
-  e.g. "feat(ingest): stream-decode product entries (ENG-3)".
+- PR titles: conventional commits ending in "(ENG-<n>)",
+  e.g. "feat(ingest): stream-decode product entries (ENG-3)". Commits add the task (see Commits).
 - Every PR targets dev. Only release PRs (dev → main) and hotfix/\* target main.
 - Don't use closing keywords ("Closes ..."); the close-issue workflow closes ENG-<n> on merge.
 - Never push to dev or main directly. Never force-push.
@@ -85,7 +85,8 @@ Always follow TDD: write or identify the tests first, confirm they fail, then wr
 
 - Create one commit per task within an issue. Never bundle multiple tasks into a single commit, and never make one commit for a whole issue.
 - Commit as soon as a task is complete and its tests pass, before starting the next task.
-- Reference the issue and task in the message, e.g. `feat(auth): add token validation (#12, task 2/4)`.
+- Reference the issue and task in the message, ONLY as ENG-<n> (never "#<n>" or "ENG-#<n>"),
+  e.g. `feat(auth): add token validation (ENG-12, task 2/4)`.
 - Do not squash, amend, or rewrite previous commits unless I ask.
 
 ## Gotchas
