@@ -2,7 +2,7 @@
 
 ## Current focus
 
-Milestone M1 (v0.1.0): local PoC. Plan: docs/milestones/M1.md. Roadmap: docs/roadmap.md.
+Milestone M1 (v0.1.0): local PoC. Plan: docs/milestones/M1.md. Roadmap: docs/plans/ROADMAP.md.
 Target machine: Apple M1, 8 GB RAM, Ollama running locally. Keep memory small: stream input,
 float32 vectors, no full-file reads of the payload.
 
@@ -45,8 +45,11 @@ float32 vectors, no full-file reads of the payload.
 
 ## Issues, branches and pull requests
 
-- Issues are referenced ONLY as ENG-<n> (n = GitHub issue number). Never write "#<n>" for an
-  issue and never "ENG-#<n>". Pull requests are referenced as "PR #<n>".
+- Issues are referenced ONLY as ENG-<n>, the id at the start of the GitHub issue title
+  ("ENG-3: [1.2] ..."). It is NOT the GitHub issue number (ENG-3 is issue 2). GitHub titles are
+  the source of truth: before any `gh issue ...` call, resolve with `scripts/eng-issue.sh ENG-<n>`
+  (prints the number; `scripts/eng-issue.sh <number>` prints the ENG id). Never write "#<n>" for
+  an issue and never "ENG-#<n>". Pull requests are referenced as "PR #<n>".
 - Branches: feat/ENG-<n>-<slug>, fix/ENG-<n>-<slug>, chore/ENG-<n>-<slug>, docs/ENG-<n>-<slug>,
   always created from origin/dev.
 - Commits and PR titles: conventional commits ending in "(ENG-<n>)",

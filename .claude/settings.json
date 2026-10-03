@@ -23,6 +23,8 @@
       "Bash(golangci-lint fmt:*)",
       "Bash(sqlite3 -readonly:*)",
       "Bash(jq:*)",
+      "Bash(scripts/eng-issue.sh:*)",
+      "Bash(bash scripts/eng-issue_test.sh)",
       "Bash(ollama list)",
       "Bash(git status)",
       "Bash(git diff:*)",
@@ -37,18 +39,6 @@
       "Bash(gh pr diff:*)",
       "Bash(gh pr list:*)"
     ],
-    "ask": [
-      "Bash(go get:*)",
-      "Bash(go tool goose:*)",
-      "Bash(ollama pull:*)",
-      "Bash(git push:*)",
-      "Bash(git tag:*)",
-      "Bash(gh pr create:*)",
-      "Bash(gh issue create:*)",
-      "Bash(gh issue edit:*)",
-      "Bash(gh issue close:*)",
-      "Bash(gh api:*)"
-    ],
     "deny": [
       "Read(./.env)",
       "Read(./.env.*)",
@@ -60,6 +50,18 @@
       "Bash(git push --force:*)",
       "Bash(git push origin main:*)",
       "Bash(git push origin dev:*)"
+    ],
+    "ask": [
+      "Bash(go get:*)",
+      "Bash(go tool goose:*)",
+      "Bash(ollama pull:*)",
+      "Bash(git push:*)",
+      "Bash(git tag:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh issue create:*)",
+      "Bash(gh issue edit:*)",
+      "Bash(gh issue close:*)",
+      "Bash(gh api:*)"
     ]
   },
   "hooks": {

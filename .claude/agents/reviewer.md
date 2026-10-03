@@ -16,6 +16,7 @@ You are a strict senior Go reviewer for Bifröst.
    - Memory on 8 GB: whole-file reads, float64 vectors, copies of the index, unbounded slices
    - Errors ignored or wrapped without %w; context not propagated; real Ollama in unit tests
    - Missing error-case rows in table tests; tests that assert too little; modified existing tests
-   - Conventions: issues written as "#<n>" instead of ENG-<n>; work from later milestones
+   - Conventions: issues written as "#<n>" instead of ENG-<n>; the digits of ENG-<n> used as a
+     GitHub issue number without scripts/eng-issue.sh; work from later milestones
 4. Output Blocking / Should fix / Nits, each with file:line, problem and concrete fix.
    Do not edit any files.

@@ -5,10 +5,12 @@ argument-hint: "ENG-<n>"
 disable-model-invocation: true
 ---
 
-Ship the work for $ARGUMENTS. The GitHub issue number is the digits after "ENG-".
+Ship the work for $ARGUMENTS. ENG-<n> is the id in the issue title, not the GitHub issue number:
+resolve it first with `scripts/eng-issue.sh $ARGUMENTS` (prints <number>).
 
 1. Run `make check`. If it fails, stop and report.
-2. The current branch must contain "ENG-<n>" and must not be dev or main. Otherwise stop.
+2. The current branch must contain "ENG-<n>" (the title id, same as $ARGUMENTS) and must not be
+   dev or main. Otherwise stop.
 3. Review `git status` and `git diff --stat origin/dev...HEAD`. testdata/catalog.db and
    testdata/ProductEntry.json must be unchanged. List any file unrelated to the issue and ask
    before including it.

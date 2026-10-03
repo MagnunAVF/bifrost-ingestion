@@ -4,9 +4,10 @@ description: Fix a bug reported as an ENG issue, starting from a failing regress
 argument-hint: "ENG-<n>"
 ---
 
-Fix $ARGUMENTS. The GitHub issue number is the digits after "ENG-".
+Fix $ARGUMENTS. ENG-<n> is the id in the issue title, not the GitHub issue number:
+resolve it first with `scripts/eng-issue.sh $ARGUMENTS` (prints <number>).
 
-1. `gh issue view <n> --comments`.
+1. `gh issue view <number> --comments`.
 2. `git fetch origin && git checkout -b fix/ENG-<n>-<short-slug> origin/dev`.
 3. Find the root cause and explain it in 2-3 sentences.
 4. Add a table row or test that reproduces the bug; show it failing with `go test -run`.
