@@ -1,0 +1,9 @@
+version: "2"
+sql:
+  - engine: "sqlite"
+    schema: "internal/catalog/migrations" # or "internal/catalog/schema.sql" (make schema)
+    queries: "internal/catalog/queries"
+    gen:
+      go:
+        package: "db"
+        out: "internal/catalog/db"

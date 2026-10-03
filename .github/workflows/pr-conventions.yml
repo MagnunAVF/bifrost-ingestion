@@ -1,0 +1,43 @@
+name: PR conventions
+on:
+    pull_request:
+        types: [opened, edited, synchronize, reopened]
+permissions:
+    contents: read
+    issues: read
+jobs:
+    pr-conventions:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - name: Check base, branch and title
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  GH_REPO: ${{ github.repository }}
+                  BASE: ${{ github.base_ref }}
+                  HEAD: ${{ github.head_ref }}
+                  TITLE: ${{ github.event.pull_request.title }}
+              run: |
+                  fail() { echo "::error::$1"; exit 1; }
+
+                  if [ "$BASE" = "main" ]; then
+                    [[ "$HEAD" == "dev" || "$HEAD" == hotfix/* ]] || fail "PRs into main must come from dev or hotfix/*"
+                    exit 0
+                  fi
+                  [ "$BASE" = "dev" ] || fail "PRs must target dev"
+
+                  # Exceptions into dev: back-merge from main, release notes, the Claude app's own setup PR
+                  [[ "$HEAD" == "main" || "$HEAD" == release/* || "$HEAD" == add-claude-github-actions-* ]] && exit 0
+
+                  # ENG-<n> is the id in the issue title, not the GitHub number (ENG-3 is issue 2).
+                  # claude/issue-<n> branches carry the GitHub number, so map it to its ENG id.
+                  if [[ "$HEAD" =~ ENG-([0-9]+) ]]; then
+                    id="ENG-${BASH_REMATCH[1]}"
+                    scripts/eng-issue.sh "$id" >/dev/null || fail "Branch names $id, but no issue title starts with \"$id:\""
+                  elif [[ "$HEAD" =~ ^claude/issue-([0-9]+) ]]; then
+                    id=$(scripts/eng-issue.sh "${BASH_REMATCH[1]}") || fail "Issue ${BASH_REMATCH[1]} has no ENG-<n> title"
+                  else
+                    fail "Branch must contain ENG-<n>, e.g. feat/ENG-12-sanitize"
+                  fi
+                  [[ "$TITLE" =~ \(${id}\)$ ]] || fail "PR title must end with (${id})"
+                  if [[ "$TITLE" =~ \#[0-9]+ ]]; then fail "Write issues as ENG-<n>, not #<n>"; fi

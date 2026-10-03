@@ -1,0 +1,7 @@
+{
+  "recommendations": [
+    "anthropic.claude-code",
+    "golang.go",
+    "github.vscode-pull-request-github"
+  ]
+}
