@@ -13,7 +13,7 @@ jobs:
               with: { go-version-file: go.mod }
             - uses: golangci/golangci-lint-action@v7 # v7+ supports golangci-lint v2
               with: { version: latest } # pin a version for reproducible builds
-            - run: go tool sqlc diff
+            - run: make sqlc-diff # skips until internal/catalog/queries has SQL
             - run: go mod tidy -diff
-            - run: go test -race -count=1 ./...
-            - run: go tool govulncheck ./...
+            - run: make test # go test -race + scripts/eng-issue_test.sh
+            - run: make vuln
