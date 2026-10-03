@@ -78,6 +78,13 @@ Always follow TDD: write or identify the tests first, confirm they fail, then wr
 - If tests DO exist: use them as the specification. NEVER modify, delete, skip, or weaken existing tests to make code pass. If you believe an existing test is wrong or outdated, stop and explain why instead of changing it.
 - Run the test suite after each change and report the results.
 
+### Commits (mandatory)
+
+- Create one commit per task within an issue. Never bundle multiple tasks into a single commit, and never make one commit for a whole issue.
+- Commit as soon as a task is complete and its tests pass, before starting the next task.
+- Reference the issue and task in the message, e.g. `feat(auth): add token validation (#12, task 2/4)`.
+- Do not squash, amend, or rewrite previous commits unless I ask.
+
 ## Gotchas
 
 - SQLite can't change a column's type with ALTER TABLE: rebuild the table (internal/catalog/CLAUDE.md).
