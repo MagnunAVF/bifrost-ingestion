@@ -3,6 +3,7 @@ package ingest
 import (
 	"strings"
 	"unicode"
+	"unicode/utf8"
 
 	"golang.org/x/text/unicode/norm"
 )
@@ -15,19 +16,40 @@ const MaxFieldRunes = 256
 // runs collapse to one space, the ends are trimmed and the length is capped at MaxFieldRunes.
 // Quotes, apostrophes, accents and symbols are never touched. Sanitize is idempotent.
 func Sanitize(s string) string {
-	s = strings.ToValidUTF8(s, "�")
+	out, _ := clean(s)
+	return out
+}
+
+// changes records what clean had to alter beyond whitespace, for the suspicious flags.
+type changes struct {
+	invalidUTF8 bool
+	removed     bool // control or format characters dropped
+	truncated   bool
+}
+
+func clean(s string) (string, changes) {
+	var c changes
+	if !utf8.ValidString(s) {
+		c.invalidUTF8 = true
+		s = strings.ToValidUTF8(s, "�")
+	}
 	s = strings.Map(func(r rune) rune {
 		switch {
 		case unicode.IsSpace(r):
 			return ' '
 		case unicode.In(r, unicode.Cc, unicode.Cf):
+			c.removed = true
 			return -1
 		}
 		return r
 	}, s)
 	s = norm.NFC.String(s)
 	s = strings.Join(strings.Fields(s), " ")
-	return strings.TrimSpace(truncate(s, MaxFieldRunes))
+	if utf8.RuneCountInString(s) > MaxFieldRunes {
+		c.truncated = true
+		s = strings.TrimSpace(truncate(s, MaxFieldRunes))
+	}
+	return s, c
 }
 
 // truncate cuts s to at most n runes, on a rune boundary.
