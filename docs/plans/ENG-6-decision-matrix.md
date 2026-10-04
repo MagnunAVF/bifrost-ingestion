@@ -150,7 +150,13 @@ type Config struct {
 	DryRun    bool
 	BatchSize int          // cold-start embedding batch; 0 means 64
 	Logger    *slog.Logger // nil means discard
+	TaskPrefix string      // prepended to every embedded text; bifrost ingest sets DefaultTaskPrefix
 }
+
+const (
+	DefaultThreshold  = 0.975          // calibrated with DefaultTaskPrefix (ADR 0002)
+	DefaultTaskPrefix = "clustering: " // nomic task prefix chosen by the calibration (D9)
+)
 
 type Pipeline struct{ /* store, embedder, cfg, index, products */ }
 
@@ -423,8 +429,9 @@ All approved 2026-10-03 (D5-D8 in their revised form).
   and I'll update that line.
 - **D2. Kind is an int enum starting at 1, and Policy is a struct.** M2 adds `KindAmbiguous`
   and a Policy field without breaking callers.
-- **D3. The threshold is inclusive** (`score >= T` is a duplicate). Placeholder default 0.90
-  until task 7 sets the calibrated value.
+- **D3. The threshold is inclusive** (`score >= T` is a duplicate). Calibrated in task 7:
+  0.975 with the `clustering: ` prefix, precision first (chosen 2026-10-03, after the calibration
+  showed that the duplicate and distinct-product distributions overlap; ADR 0002).
 - **D4. No exact-match fast path** (open question 6): every new decision goes through
   embeddings, so calibration and behaviour stay one code path. Idempotency skips are the only
   shortcut.
@@ -479,9 +486,9 @@ All approved 2026-10-03 (D5-D8 in their revised form).
   - **Failed records carry an ErrKind** (conflict, not found, other; a foreign-key kind was dropped: links only target products just read from the catalog, so it would need a new sentinel for an unreachable case).
   - **`embed.StatusError`** (additive) lets hints match on the HTTP status rather than the
     message text.
-- **D9. Nomic task prefix** (deferred by ENG-4): the calibration measures both; the default
-  stays no prefix unless `clustering: ` separates clearly better, in which case it is applied
-  in the pipeline for catalog rows and entries alike (the identity string itself is
+- **D9. Nomic task prefix** (deferred by ENG-4): the calibration measured both. `clustering: `
+  gives wider margins at the chosen precision-first threshold, so `Config.TaskPrefix` applies
+  it in the pipeline for catalog rows and entries alike (the identity string itself is
   unchanged).
 - **D10. New sentinel `errs.ErrNotMigrated`** for `RequireMigrated`.
 - **D11. Replace the cmd test row "ingest is a stub until ENG-6"** with the new ingest rows.

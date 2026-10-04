@@ -15,10 +15,6 @@ import (
 	"github.com/MagnunAVF/bifrost-ingestion/internal/ingest"
 )
 
-// defaultThreshold is the cosine score at or above which an entry links to its nearest catalog
-// product. Placeholder until the ENG-6 calibration (docs/milestones/M1.md, Decisions).
-const defaultThreshold = 0.90
-
 // exitFailedRecords means the run completed but some records failed and were rolled back.
 const exitFailedRecords = 3
 
@@ -39,7 +35,7 @@ func runIngest(ctx context.Context, args []string, stdout, stderr io.Writer) int
 	fs.StringVar(&cfg.input, "input", "", "path of the ProductEntry.json payload (required)")
 	fs.StringVar(&cfg.model, "model", "nomic-embed-text", "Ollama embedding model")
 	fs.StringVar(&cfg.ollamaURL, "ollama-url", embed.DefaultBaseURL, "Ollama base URL")
-	fs.Float64Var(&cfg.threshold, "threshold", defaultThreshold, "cosine score in (0, 1] at or above which an entry is a duplicate")
+	fs.Float64Var(&cfg.threshold, "threshold", dedup.DefaultThreshold, "cosine score in (0, 1] at or above which an entry is a duplicate")
 	fs.StringVar(&cfg.update, "update", "fill", "what a matched entry may change on its product: fill, none or overwrite")
 	fs.BoolVar(&cfg.dryRun, "dry-run", false, "decide and report every entry without writing")
 	if err := fs.Parse(args); err != nil {
@@ -96,7 +92,7 @@ func runIngest(ctx context.Context, args []string, stdout, stderr io.Writer) int
 		return usageErr("%v", err)
 	}
 	p, err := dedup.New(c, emb, dedup.Config{
-		Policy: policy, Update: mode, DryRun: cfg.dryRun,
+		Policy: policy, Update: mode, DryRun: cfg.dryRun, TaskPrefix: dedup.DefaultTaskPrefix,
 		Logger: slog.New(slog.NewTextHandler(stderr, nil)),
 	})
 	if err != nil {

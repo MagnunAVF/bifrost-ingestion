@@ -514,6 +514,42 @@ func TestRunRerunAfterUpdatesChangesNothing(t *testing.T) {
 	assert.Empty(t, again.Results[0].Changes)
 }
 
+// recordingEmbedder records every text it is asked to embed.
+type recordingEmbedder struct {
+	f     *embed.Fake
+	texts *[]string
+}
+
+func (r recordingEmbedder) Embed(ctx context.Context, texts []string) ([][]float32, error) {
+	*r.texts = append(*r.texts, texts...)
+	return r.f.Embed(ctx, texts)
+}
+
+func TestRunTaskPrefixIsAppliedToEveryText(t *testing.T) {
+	d := newDB(t)
+	p := d.product(t, 113)
+	require.NoError(t, d.c.LinkSeller(t.Context(), &catalog.SellerLink{SellerName: "MegaStore", SellerProductID: uuidA, ProductID: 113}, nil))
+	var texts []string
+
+	rep := mustRun(t, d.c, recordingEmbedder{embed.NewFake(dim), &texts}, cfg(func(c *dedup.Config) { c.TaskPrefix = dedup.DefaultTaskPrefix }),
+		entry(0, "MegaStore", uuidA, p.Name, "Acme", p.Category), // existing: fills, so 113 is re-embedded
+		entry(1, "SportsHub", uuidB, p.Name, "Acme", p.Category), // embedded
+	)
+
+	assert.Equal(t, "clustering: ", dedup.DefaultTaskPrefix)
+	require.Len(t, texts, 1+975+1+1, "preflight, cold start, re-embed, entry")
+	for _, s := range texts {
+		require.True(t, strings.HasPrefix(s, "clustering: "), "%q", s)
+	}
+	assert.Equal(t, "clustering: "+ingest.Identity(p.Name, "Acme", p.Category), texts[len(texts)-1])
+	assert.Equal(t, dedup.OutcomeLinked, rep.Results[1].Outcome, "prefixed on both sides, so identical identities still score 1")
+	assert.Equal(t, ingest.Identity(p.Name, "Acme", p.Category), rep.Results[1].Identity, "the report keeps the identity string")
+}
+
+func TestDefaultThresholdIsCalibrated(t *testing.T) {
+	assert.InDelta(t, 0.975, dedup.DefaultThreshold, 1e-9, "set by the ENG-6 calibration (ADR 0002)")
+}
+
 // --- failures ------------------------------------------------------------------------------
 
 func TestRunStoreFailureOnOneRecordDoesNotStopTheRun(t *testing.T) {

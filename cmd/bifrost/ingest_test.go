@@ -180,7 +180,7 @@ func TestIngestDryRunOnTheFixture(t *testing.T) {
 	require.Equal(t, 0, code, stderr.String())
 	out := stdout.String()
 	assert.Contains(t, out, "Bifröst ingest report (DRY RUN: nothing written)")
-	assert.Contains(t, out, "threshold 0.900, update fill, catalog 975 products")
+	assert.Contains(t, out, "threshold 0.975, update fill, catalog 975 products")
 	assert.Contains(t, out, "records 269:")
 	assert.Contains(t, out, "rejected 3")
 	assert.Contains(t, out, "\ndecisions:\n", "a dry run prints every decision")

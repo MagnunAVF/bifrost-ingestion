@@ -15,6 +15,16 @@ import (
 	"github.com/MagnunAVF/bifrost-ingestion/internal/vector"
 )
 
+// DefaultThreshold is the cosine score at or above which an entry links to its nearest catalog
+// product, calibrated with DefaultTaskPrefix on nomic-embed-text: no two distinct catalog
+// products score this high, and only the two Portuguese translations in the fixture fall below
+// it (ADR 0002).
+const DefaultThreshold = 0.975
+
+// DefaultTaskPrefix is the nomic task prefix the calibration chose. It is prepended to every
+// text the pipeline embeds (catalog rows and entries alike); the identity string is unchanged.
+const DefaultTaskPrefix = "clustering: "
+
 // DefaultBatchSize is how many catalog identities the cold start embeds per call.
 const DefaultBatchSize = 64
 
@@ -38,6 +48,23 @@ type Config struct {
 	DryRun    bool         // decide and report, write nothing; new products get ids -1, -2, ...
 	BatchSize int          // cold-start embedding batch; 0 means DefaultBatchSize
 	Logger    *slog.Logger // nil means discard
+	// TaskPrefix is prepended to every embedded text; a threshold is only valid for the prefix
+	// it was calibrated with (DefaultThreshold goes with DefaultTaskPrefix).
+	TaskPrefix string
+}
+
+// prefixed prepends a task prefix to every text before embedding.
+type prefixed struct {
+	e      embed.Embedder
+	prefix string
+}
+
+func (p prefixed) Embed(ctx context.Context, texts []string) ([][]float32, error) {
+	in := make([]string, len(texts))
+	for i, s := range texts {
+		in[i] = p.prefix + s
+	}
+	return p.e.Embed(ctx, in)
 }
 
 // Pipeline decides, for each seller entry, whether to link it to an existing Product or insert a
@@ -80,6 +107,9 @@ func New(store Store, e embed.Embedder, cfg Config) (*Pipeline, error) {
 	log := cfg.Logger
 	if log == nil {
 		log = slog.New(slog.NewTextHandler(io.Discard, nil))
+	}
+	if cfg.TaskPrefix != "" {
+		e = prefixed{e: e, prefix: cfg.TaskPrefix}
 	}
 	return &Pipeline{store: store, emb: e, cfg: cfg, log: log}, nil
 }
