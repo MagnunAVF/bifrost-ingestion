@@ -9,6 +9,8 @@ import (
 	"strings"
 
 	"github.com/pressly/goose/v3"
+
+	"github.com/MagnunAVF/bifrost-ingestion/internal/platform/errs"
 )
 
 //go:embed migrations/*.sql
@@ -20,8 +22,24 @@ func (c *Catalog) Migrate(ctx context.Context) ([]int64, error) {
 	return c.migrate(ctx, 0)
 }
 
-// migrate applies the pending migrations up to and including version; 0 means all of them.
-func (c *Catalog) migrate(ctx context.Context, version int64) ([]int64, error) {
+// RequireMigrated returns an error wrapping errs.ErrNotMigrated when any migration is pending,
+// so `bifrost ingest` never runs against the legacy schema.
+func (c *Catalog) RequireMigrated(ctx context.Context) error {
+	p, err := c.provider()
+	if err != nil {
+		return err
+	}
+	pending, err := p.HasPending(ctx)
+	if err != nil {
+		return fmt.Errorf("checking migrations: %w", err)
+	}
+	if pending {
+		return fmt.Errorf("catalog has pending migrations (run bifrost migrate): %w", errs.ErrNotMigrated)
+	}
+	return nil
+}
+
+func (c *Catalog) provider() (*goose.Provider, error) {
 	dir, err := fs.Sub(migrationFiles, "migrations")
 	if err != nil {
 		return nil, fmt.Errorf("loading migrations: %w", err)
@@ -29,6 +47,15 @@ func (c *Catalog) migrate(ctx context.Context, version int64) ([]int64, error) {
 	p, err := goose.NewProvider(goose.DialectSQLite3, c.db, dir, goose.WithDisableGlobalRegistry(true))
 	if err != nil {
 		return nil, fmt.Errorf("loading migrations: %w", err)
+	}
+	return p, nil
+}
+
+// migrate applies the pending migrations up to and including version; 0 means all of them.
+func (c *Catalog) migrate(ctx context.Context, version int64) ([]int64, error) {
+	p, err := c.provider()
+	if err != nil {
+		return nil, err
 	}
 
 	var results []*goose.MigrationResult

@@ -10,3 +10,8 @@ WHERE SellerName = ? AND SellerProductId = ?;
 
 -- name: InsertSellerLink :one
 INSERT INTO SellerProduct (SellerName, ProductId, SellerProductId) VALUES (?, ?, ?) RETURNING Id;
+
+-- name: UpdateProductAttributes :execrows
+UPDATE Product
+SET Brand = coalesce(sqlc.narg(brand), Brand), Category = coalesce(sqlc.narg(category), Category)
+WHERE Id = sqlc.arg(id);

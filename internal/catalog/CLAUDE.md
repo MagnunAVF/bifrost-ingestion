@@ -17,4 +17,6 @@
 - If sqlc can't parse the rebuild migration, point sqlc.yaml's `schema` at schema.sql and
   regenerate it with `make schema`.
 - Map sql.ErrNoRows to errs.ErrNotFound and unique-constraint errors to errs.ErrConflict here.
-- dedup writes through catalog.WithTx(ctx, func(q \*db.Queries) error); one transaction per product.
+- dedup writes through the plain-typed store methods in store.go (LinkSeller,
+  InsertProductAndLink), which own the transaction (one per product) so dedup never imports
+  database/sql. WithTx stays the building block inside this package.
