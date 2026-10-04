@@ -15,4 +15,10 @@ case "$file" in
     if ! out=$(golangci-lint run "$(dirname "$file")" 2>&1); then
       echo "golangci-lint errors in $(dirname "$file"):" >&2; echo "$out" >&2; exit 2
     fi ;;
+  */agent/*.py)
+    [ -f agent/pyproject.toml ] || exit 0 # until plan 2.0 creates the uv project
+    (cd agent && uv run --frozen ruff format "$file" >/dev/null 2>&1)
+    if ! out=$(cd agent && uv run --frozen ruff check "$file" 2>&1); then
+      echo "ruff errors in $file:" >&2; echo "$out" >&2; exit 2
+    fi ;;
 esac

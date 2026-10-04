@@ -26,8 +26,9 @@ jobs:
                   fi
                   [ "$BASE" = "dev" ] || fail "PRs must target dev"
 
-                  # Exceptions into dev: back-merge from main, release notes, the Claude app's own setup PR
-                  [[ "$HEAD" == "main" || "$HEAD" == release/* || "$HEAD" == add-claude-github-actions-* ]] && exit 0
+                  # Exceptions into dev: back-merge from main, release notes, milestone plans (docs/plan-M<k>,
+                  # no ENG id so close-issue closes nothing), the Claude app's own setup PR
+                  [[ "$HEAD" == "main" || "$HEAD" == release/* || "$HEAD" =~ ^docs/plan-M[0-9]+$ || "$HEAD" == add-claude-github-actions-* ]] && exit 0
 
                   # ENG-<n> is the id in the issue title, not the GitHub number (ENG-3 is issue 2).
                   # claude/issue-<n> branches carry the GitHub number, so map it to its ENG id.
