@@ -1,0 +1,32 @@
+name: Close ENG issue on merge into dev
+on:
+    pull_request:
+        types: [closed]
+        branches: [dev]
+permissions:
+    contents: read
+    issues: write
+jobs:
+    close:
+        if: github.event.pull_request.merged == true
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - env:
+                  GH_TOKEN: ${{ github.token }}
+                  GH_REPO: ${{ github.repository }}
+                  HEAD: ${{ github.head_ref }}
+                  PR_URL: ${{ github.event.pull_request.html_url }}
+              run: |
+                  # ENG-<n> is the id in the issue title, not the GitHub number (ENG-3 is issue 2),
+                  # so resolve it. claude/issue-<n> branches carry the GitHub number itself.
+                  if [[ "$HEAD" =~ ENG-([0-9]+) ]]; then
+                    id="ENG-${BASH_REMATCH[1]}"
+                    number=$(scripts/eng-issue.sh "$id")
+                  elif [[ "$HEAD" =~ ^claude/issue-([0-9]+) ]]; then
+                    number="${BASH_REMATCH[1]}"
+                    id=$(scripts/eng-issue.sh "$number")
+                  else
+                    echo "No ENG-<n> in branch name; nothing to close."; exit 0
+                  fi
+                  gh issue close "$number" --comment "$id done in $PR_URL (merged into dev)."

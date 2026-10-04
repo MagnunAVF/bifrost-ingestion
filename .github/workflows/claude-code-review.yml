@@ -1,0 +1,23 @@
+name: Claude PR review
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches: [dev]
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            Review PR #${{ github.event.pull_request.number }} in ${{ github.repository }}.
+            Follow CLAUDE.md and .claude/agents/reviewer.md. Refer to issues as ENG-<n>.
+            Post one summary comment with Blocking / Should fix / Nits using `gh pr comment`.
+          claude_args: '--allowedTools "Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr comment:*)"'
