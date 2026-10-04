@@ -14,4 +14,6 @@ var (
 	// ErrUpstream means an external service (e.g. Ollama) failed or answered with something
 	// unusable: a non-200 status, a malformed or oversized body, or inconsistent results.
 	ErrUpstream = errors.New("upstream failed")
+	// ErrNotMigrated means the catalog database has pending migrations.
+	ErrNotMigrated = errors.New("catalog not migrated")
 )

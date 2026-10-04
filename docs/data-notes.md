@@ -227,9 +227,30 @@ Examples:
 
 For the report and the exact-match fast path, a separate **match key** could be used:
 lowercase, accent-folded, with non-alphanumerics stripped. It resolves 266 of 269 entries
-without embedding. Whether to use it is open question 6.
+without embedding. ENG-6 decided against the fast path (open question 6); the calibration test
+uses the key only to label the known pairs.
+
+**What is embedded (ENG-6):** `dedup.DefaultTaskPrefix + identity`, i.e.
+`clustering: <identity>`, for catalog rows and entries alike. The prefix is applied by the
+pipeline, not by `ingest.Identity`, so the golden file is unchanged. The threshold (0.975) is
+only valid with this prefix and this model (ADR 0002).
 
 ## Open questions
+
+Answered so far (details in docs/milestones/M1.md, Decisions):
+
+- 1, 2, 8 (ENG-3): malformed Ids are rejected; 8-4-4-4-12 hex shape, lowercased; the SQLi
+  record is rejected for its Id and reported as suspicious.
+- 3, 10, 11 (ENG-2): ids unique per seller (UNIQUE index), foreign keys on, `CHECK` on length.
+- 4 (ENG-6): one SellerProduct link per Id; the same product under two Ids gets two links.
+- 5 (ENG-6): the first (SellerName, Id) wins the link. A repeat is `existing`, is not embedded,
+  and can still fill attributes (Name never changes), so 76 changes nothing.
+- 6 (ENG-6): no exact-match fast path; every new decision goes through embeddings.
+- 7 (ENG-6): no synthetic set; catalog leave-one-out nearest neighbours are the negatives
+  (ADR 0002).
+- 9 (ENG-6): `--update fill` (default) fills NULL Brand/Category only; `overwrite` replaces,
+  but only with a category already in the catalog, and the first record in a run wins; `none`
+  links only. Differences left alone are report notes (87 `Photo`, 188 `Levi's`). ADR 0003.
 
 1. **Malformed Ids (92, 180, 268).** Reject the record with a reason, or store the raw string
    because the column becomes TEXT anyway? Index 92 is otherwise a clean, valid product.

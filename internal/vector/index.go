@@ -3,10 +3,15 @@ package vector
 import (
 	"errors"
 	"fmt"
+	"slices"
 )
 
-// ErrDuplicateID means an id is already in the index.
-var ErrDuplicateID = errors.New("duplicate id")
+var (
+	// ErrDuplicateID means an id is already in the index.
+	ErrDuplicateID = errors.New("duplicate id")
+	// ErrNotFound means an id is not in the index.
+	ErrNotFound = errors.New("id not in index")
+)
 
 // Index is an exact nearest-neighbour index over unit vectors. Vectors are normalized once on
 // Add and stored back to back in one []float32, so a query is a linear scan of dot products.
@@ -57,6 +62,29 @@ func (ix *Index) Add(id int64, vec []float32) error {
 	}
 	ix.ids = append(ix.ids, id)
 	ix.seen[id] = struct{}{}
+	return nil
+}
+
+// Replace normalizes a copy of vec and stores it in place of id's vector, keeping id's insertion
+// position (and so its tie-break order). An unknown id is ErrNotFound; on error the index is
+// unchanged.
+func (ix *Index) Replace(id int64, vec []float32) error {
+	if _, ok := ix.seen[id]; !ok {
+		return fmt.Errorf("replacing id %d: %w", id, ErrNotFound)
+	}
+	if len(vec) != ix.dim {
+		return fmt.Errorf("replacing id %d: got %d dimensions, index has %d: %w",
+			id, len(vec), ix.dim, ErrDimensionMismatch)
+	}
+	n, err := length(vec)
+	if err != nil {
+		return fmt.Errorf("replacing id %d: %w", id, err)
+	}
+	i := slices.Index(ix.ids, id)
+	dst := ix.data[i*ix.dim : (i+1)*ix.dim]
+	for j, x := range vec {
+		dst[j] = float32(float64(x) / n)
+	}
 	return nil
 }
 

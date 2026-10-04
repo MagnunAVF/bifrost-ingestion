@@ -97,3 +97,23 @@ func (q *Queries) ListProducts(ctx context.Context) ([]Product, error) {
 	}
 	return items, nil
 }
+
+const updateProductAttributes = `-- name: UpdateProductAttributes :execrows
+UPDATE Product
+SET Brand = coalesce(?1, Brand), Category = coalesce(?2, Category)
+WHERE Id = ?3
+`
+
+type UpdateProductAttributesParams struct {
+	Brand    sql.NullString
+	Category sql.NullString
+	ID       int64
+}
+
+func (q *Queries) UpdateProductAttributes(ctx context.Context, arg UpdateProductAttributesParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, updateProductAttributes, arg.Brand, arg.Category, arg.ID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}

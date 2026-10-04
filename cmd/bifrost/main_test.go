@@ -29,7 +29,7 @@ func TestRun(t *testing.T) {
 		{name: "migrate rejects unknown flags", args: []string{"migrate", "--nope"}, wantCode: 2, wantStderr: "flag provided but not defined"},
 		{name: "migrate rejects extra arguments", args: []string{"migrate", "--db", "x.db", "extra"}, wantCode: 2, wantStderr: `unexpected argument "extra"`},
 		{name: "migrate -h", args: []string{"migrate", "-h"}, wantCode: 0, wantStderr: "-db"},
-		{name: "ingest is a stub until ENG-6", args: []string{"ingest"}, wantCode: 1, wantStderr: "ingest: not implemented yet"},
+		{name: "ingest needs --db", args: []string{"ingest"}, wantCode: 2, wantStderr: "ingest: --db is required"},
 	}
 
 	for _, tt := range tests {
