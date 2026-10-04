@@ -152,8 +152,7 @@ func (o *Ollama) embedBatch(ctx context.Context, texts []string) ([][]float32, e
 
 	if resp.StatusCode != http.StatusOK {
 		snippet, _ := io.ReadAll(io.LimitReader(resp.Body, errorSnippetBytes))
-		return nil, fmt.Errorf("ollama returned %d: %s: %w",
-			resp.StatusCode, strings.TrimSpace(string(snippet)), errs.ErrUpstream)
+		return nil, &StatusError{Code: resp.StatusCode, Body: strings.TrimSpace(string(snippet))}
 	}
 
 	body, err := io.ReadAll(io.LimitReader(resp.Body, o.cfg.MaxResponseBytes+1))
@@ -199,6 +198,19 @@ func (o *Ollama) checkShape(vecs [][]float32, want int) error {
 	o.dim = dim
 	return nil
 }
+
+// StatusError is a non-200 answer from Ollama, e.g. 404 when the model is not pulled. It wraps
+// errs.ErrUpstream, so errors.Is(err, errs.ErrUpstream) still holds.
+type StatusError struct {
+	Code int
+	Body string // first errorSnippetBytes bytes of the body, trimmed
+}
+
+func (e *StatusError) Error() string {
+	return fmt.Sprintf("ollama returned %d: %s: %v", e.Code, e.Body, errs.ErrUpstream)
+}
+
+func (e *StatusError) Unwrap() error { return errs.ErrUpstream }
 
 // transportErr wraps a network error. A cancelled or expired context is reported as such, not
 // as an upstream failure.
