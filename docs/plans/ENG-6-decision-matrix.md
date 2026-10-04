@@ -199,7 +199,7 @@ type Result struct {
 	MatchIdentity   string
 	ProductID       int64   // the product linked to (provisional < 0 in dry run)
 	Reason          string  // reject reason or error text
-	ErrKind         string  // for failed: "conflict", "not found", "foreign key", "other"
+	ErrKind         string  // for failed: "conflict", "not found" or "other"
 	Flags           []ingest.Flag
 	Changes         []Change // attribute updates applied (or simulated) on ProductID
 	Notes           []string // drift left alone, with why (D6)
@@ -476,7 +476,7 @@ All approved 2026-10-03 (D5-D8 in their revised form).
     "cmd/bifrost") and that a re-run is safe.
   - **Exit code 3** means completed with failed records, distinct from 1 (fatal), so scripts
     can tell them apart.
-  - **Failed records carry an ErrKind** (conflict, not found, foreign key, other).
+  - **Failed records carry an ErrKind** (conflict, not found, other; a foreign-key kind was dropped: links only target products just read from the catalog, so it would need a new sentinel for an unreachable case).
   - **`embed.StatusError`** (additive) lets hints match on the HTTP status rather than the
     message text.
 - **D9. Nomic task prefix** (deferred by ENG-4): the calibration measures both; the default
