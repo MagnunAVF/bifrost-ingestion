@@ -57,3 +57,9 @@ one explicit transaction, `foreign_key_check` before COMMIT.
 - The down migration restores the INTEGER column but is lossy (affinity rewrites numeric ids).
 - `goose_db_version` is added to the shared file.
 - Ids longer than 64 characters, or empty ones, are rejected by the database.
+
+## Updates
+
+- 2026-10-03 (ENG-3): the open question on malformed ids is answered. `ingest` rejects any Id
+  without the 8-4-4-4-12 hex shape and stores accepted ids lowercased, so fixture entries 92,
+  180 and 268 are rejected and reported. The database CHECK stays a length check only.
