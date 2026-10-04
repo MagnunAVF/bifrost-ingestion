@@ -7,7 +7,8 @@ argument-hint: "ENG-<n>"
 Start work on $ARGUMENTS. ENG-<n> is the id in the issue title, not the GitHub issue number:
 resolve it first with `scripts/eng-issue.sh $ARGUMENTS` (prints <number>).
 
-1. Run `gh issue view <number> --comments`. Read docs/milestones/M1.md and docs/data-notes.md.
+1. Run `gh issue view <number> --comments`. Read the milestone plan named in CLAUDE.md
+   "Current focus" (docs/milestones/M<k>.md) and docs/data-notes.md.
    Take dependencies from the milestone table (plan ids → ENG ids), resolve each ENG id with
    scripts/eng-issue.sh, and if one is still open, stop and tell me.
 2. `git fetch origin`, then `git checkout -b <type>/ENG-<n>-<short-slug> origin/dev`
