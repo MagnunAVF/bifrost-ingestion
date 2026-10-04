@@ -95,7 +95,9 @@ func (p *Pipeline) Run(ctx context.Context, records iter.Seq2[ingest.Record, err
 			stage = StageCancelled
 		}
 		rep.Stopped = &RunError{Stage: stage, Index: index, Processed: len(rep.Results), Err: err}
-		p.log.ErrorContext(ctx, "ingest stopped", "stage", stage, "record", index, "err", err)
+		rep.Updated = len(p.updatedBy)
+		// The caller reports the RunError; this is only a trace.
+		p.log.DebugContext(ctx, "ingest stopped", "stage", stage, "record", index, "err", err)
 		return rep, rep.Stopped
 	}
 

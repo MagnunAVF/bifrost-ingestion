@@ -53,9 +53,8 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 		return 0
 	case "migrate":
 		return runMigrate(ctx, args[1:], stdout, stderr)
-	case "ingest": // lands in ENG-6
-		_, _ = fmt.Fprintf(stderr, "%s: not implemented yet\n", cmd)
-		return 1
+	case "ingest":
+		return runIngest(ctx, args[1:], stdout, stderr)
 	default:
 		_, _ = fmt.Fprintf(stderr, "unknown command %q\n\n%s", cmd, usage)
 		return 2
