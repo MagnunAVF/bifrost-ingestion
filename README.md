@@ -14,7 +14,8 @@ Prerequisites: Go 1.27.1 (see `go.mod`) and [Ollama](https://ollama.com).
 
 ```sh
 # 1. Install Ollama and start it (or open the Ollama app)
-brew install ollama
+brew install ollama                              # macOS
+curl -fsSL https://ollama.com/install.sh | sh    # Linux (official install script)
 ollama serve
 
 # 2. In another terminal, pull the embedding model (274 MB)
@@ -28,6 +29,9 @@ make run
 make run WRITE=1
 make reset-db
 ```
+
+On Linux, the install script registers Ollama as a systemd service, so `ollama serve` is
+usually not needed; check with `systemctl status ollama`.
 
 `make run` never touches `testdata/`. It works on `tmp/catalog.work.db`; override the paths
 with `make run DB=... INPUT=...`.
